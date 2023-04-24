@@ -3,10 +3,13 @@ import { useWebRTC } from '../../hooks/useWebRTC';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getRoom } from '../../http/';
+import { useDispatch } from 'react-redux';
 
 import styles from './Room.module.css';
 
 export default function Room() {
+	const dispatch = useDispatch();
+
 	const { id: roomId } = useParams();
 	const user = useSelector((state) => state.auth.user);
 	const { clients, provideRef, handleMute } = useWebRTC(roomId, user);
@@ -62,7 +65,10 @@ export default function Room() {
 								alt="palm-icon"
 							/>
 						</button>
-						<button className={styles.actionBtn}>
+						<button
+							className={styles.actionBtn}
+							onClick={handleManualLeave}
+						>
 							<img
 								src="/images/win.png"
 								alt="win-icon"
