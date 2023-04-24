@@ -54,7 +54,7 @@ export const useWebRTC = (roomId, user) => {
 			socket.current.on(ACTIONS.MUTE, ({ peerId, userId }) => {
 				handleSetMute(true, userId);
 			});
-			socket.current.on(ACTIONS.UNMUTE, ({ peerId, userId }) => {
+			socket.current.on(ACTIONS.UN_MUTE, ({ peerId, userId }) => {
 				handleSetMute(false, userId);
 			});
 			socket.current.emit(ACTIONS.JOIN, {
@@ -193,6 +193,7 @@ export const useWebRTC = (roomId, user) => {
 				}
 			}
 			async function handleSetMute(mute, userId) {
+				console.log(mute);
 				const clientIdx = clientsRef.current
 					.map((client) => client.id)
 					.indexOf(userId);
@@ -222,7 +223,7 @@ export const useWebRTC = (roomId, user) => {
 			socket.current.off(ACTIONS.ICE_CANDIDATE);
 			socket.current.off(ACTIONS.SESSION_DESCRIPTION);
 			socket.current.off(ACTIONS.MUTE);
-			socket.current.off(ACTIONS.UNMUTE);
+			socket.current.off(ACTIONS.UN_MUTE);
 		};
 	}, []);
 
@@ -243,11 +244,12 @@ export const useWebRTC = (roomId, user) => {
 							userId: user.id
 						});
 					} else {
-						socket.current.emit(ACTIONS.UNMUTE, {
+						socket.current.emit(ACTIONS.UN_MUTE, {
 							roomId,
 							userId: user.id
 						});
 					}
+
 					settled = true;
 				}
 				if (settled) {

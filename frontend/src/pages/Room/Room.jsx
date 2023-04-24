@@ -34,9 +34,11 @@ export default function Room() {
 	}, [roomId]);
 
 	const handleMuteClick = (clientId) => {
+		console.log('clients', clients);
 		if (clientId !== user.id) {
 			return;
 		}
+
 		setMuted((prev) => !prev);
 	};
 
@@ -59,12 +61,6 @@ export default function Room() {
 				<div className={styles.header}>
 					<h2 className={styles.topic}>{room?.topic}</h2>
 					<div className={styles.actions}>
-						<button className={styles.actionBtn}>
-							<img
-								src="/images/palm.png"
-								alt="palm-icon"
-							/>
-						</button>
 						<button
 							className={styles.actionBtn}
 							onClick={handleManualLeave}
