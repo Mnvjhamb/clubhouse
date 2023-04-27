@@ -7,10 +7,10 @@ const UserDto = require('../dtos/user-dto');
 const { storeRefreshToken } = require('../services/token-service');
 class AuthController {
 	async sendOtp(req, res) {
-		const { phone } = req.body;
-		if (!phone)
+		const { phone, email } = req.body;
+		if (!phone && !email)
 			return res.status(400).json({
-				message: 'Phone field is required!'
+				message: 'Phone/Email field is required!'
 			});
 
 		// generate otp
@@ -19,17 +19,22 @@ class AuthController {
 		// hash otp
 		const ttl = 1000 * 60 * 2; // 2 min expire time;
 		const expires = Date.now() + ttl;
-		const data = `${phone}.${otp}.${expires}`;
+		const data = `${phone || email}.${otp}.${expires}`;
 
 		const hash = hashService.hashOtp(data);
 
 		// send otp
 		try {
-			await otpService.sendBySms(phone, otp);
+			if (phone) {
+				await otpService.sendBySms(phone, otp);
+			} else {
+				await otpService.sendByMail(email, otp);
+			}
 
 			return res.json({
 				hash: `${hash}.${expires}`,
 				phone,
+				email,
 				otp // remove this
 			});
 		} catch (error) {
@@ -41,8 +46,8 @@ class AuthController {
 	}
 
 	async verifyOtp(req, res) {
-		const { otp, hash, phone } = req.body;
-		if (!otp || !hash || !phone)
+		const { otp, hash, phone, email } = req.body;
+		if (!otp || !hash || (!phone && !email))
 			return res.status(400).json({
 				message: 'All fields are required'
 			});
@@ -53,7 +58,7 @@ class AuthController {
 				message: 'Otp expired'
 			});
 
-		const data = `${phone}.${otp}.${expires}`;
+		const data = `${phone || email}.${otp}.${expires}`;
 
 		const isValid = await otpService.verifyOtp(hashedOtp, data);
 
@@ -65,9 +70,13 @@ class AuthController {
 		let user;
 
 		try {
-			user = await userService.findUser({ phone });
-
-			if (!user) user = await userService.createUser({ phone });
+			if (phone) {
+				user = await userService.findUser({ phone });
+				if (!user) user = await userService.createUser({ phone });
+			} else {
+				user = await userService.findUser({ email });
+				if (!user) user = await userService.createUser({ email });
+			}
 		} catch (error) {
 			console.log(err);
 			res.status(500).json({

@@ -10,15 +10,17 @@ import { useDispatch } from 'react-redux';
 
 const StepOtp = () => {
 	const [otp, setOtp] = useState('');
-	const { phone, hash } = useSelector((state) => {
+	const { phone, email, hash } = useSelector((state) => {
 		return state.auth.otp;
 	});
 
 	const dispatch = useDispatch();
 	const submit = async () => {
-		if (!otp || !hash || !phone || isNaN(otp.trim())) return;
+		console.log({ otp, phone, email, hash });
+
+		if (!otp || !hash || (!phone && !email) || isNaN(otp.trim())) return;
 		try {
-			const { data } = await verifyOtp({ otp, phone, hash });
+			const { data } = await verifyOtp({ otp, phone, email, hash });
 			console.log(data);
 
 			dispatch(setAuth(data));

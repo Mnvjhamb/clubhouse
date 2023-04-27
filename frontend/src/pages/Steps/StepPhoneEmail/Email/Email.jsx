@@ -1,29 +1,54 @@
-import React, {useState} from 'react'
-import Card from '../../../../components/shared/Card/Card'
-import Button from '../../../../components/shared/Button/Button'
-import TextInput from '../../../../components/shared/TextInput/TextInput'
-import styles from '../StepPhoneEmail.module.css'
+import React, { useState } from 'react';
+import Card from '../../../../components/shared/Card/Card';
+import Button from '../../../../components/shared/Button/Button';
+import TextInput from '../../../../components/shared/TextInput/TextInput';
+import styles from '../StepPhoneEmail.module.css';
+import { useDispatch } from 'react-redux';
+import { setOtp } from '../../../../store/authSlice';
 
-export default function Email({onNext}) {
+import { sendOtp } from '../../../../http';
 
-    const [email, setEmail] = useState('')
-  return (
-    <Card title="Enter your email id" icon="email-emoji">
+export default function Email({ onNext }) {
+	const [email, setEmail] = useState('');
+	const dispatch = useDispatch();
+	const submit = async () => {
+		//server request
+		if (!email) return;
+		const { data } = await sendOtp({ email: email });
+		console.log(data);
 
-        <TextInput value={email} onChange={(e) => setEmail(e.target.value)}/>
+		dispatch(
+			setOtp({
+				email: data.email,
+				hash: data.hash
+			})
+		);
 
-        <div>
-            
-            <div className={styles.actionButtonWrap}>
-                <Button onClick={onNext} text="Next"/>
-            </div>
+		onNext();
+	};
+	return (
+		<Card
+			title="Enter your email id"
+			icon="email-emoji"
+		>
+			<TextInput
+				value={email}
+				onChange={(e) => setEmail(e.target.value)}
+			/>
 
-            <p className={styles.bottomPara}>
-                By entering your email, you're agreeing to our Terms of Service and Privacy Policy. Thanks!
-            </p>
+			<div>
+				<div className={styles.actionButtonWrap}>
+					<Button
+						onClick={submit}
+						text="Next"
+					/>
+				</div>
 
-        </div>
-    </Card>
-
-  )
+				<p className={styles.bottomPara}>
+					By entering your email, you're agreeing to our Terms of
+					Service and Privacy Policy. Thanks!
+				</p>
+			</div>
+		</Card>
+	);
 }
